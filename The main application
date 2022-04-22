@@ -1,0 +1,199 @@
+import tkinter as tk
+import pandas as pd
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt 
+import scipy.stats as ss
+import fitter
+
+matplotlib.use("TkAgg")
+LARGE_FONT= ("Times New Roman", 12)
+
+from tkinter import ttk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+from reliability.Fitters import Fit_Weibull_3P, Fit_Lognormal_3P, Fit_Loglogistic_3P, Fit_Gamma_3P, Fit_Exponential_2P
+from reliability.Probability_plotting import plot_points
+from fitter import Fitter
+from tkinter.scrolledtext import ScrolledText
+
+class POFapp(tk.Tk):
+    
+    def __init__(self, *args, **kwargs):
+        
+        tk.Tk.__init__(self, *args, **kwargs)
+        tk.Tk.wm_title(self, "Probability of Failure App")
+        
+        container = tk.Frame(self)    ## To contain the stuff for GUI
+        container.pack(side= "top", fill="both", expand= True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        self.frames = {}
+        
+        for F in (StartPage, PageOne, PageTwo, PageThree):
+
+            frame = F(container, self)
+
+            self.frames[F] = frame
+
+            frame.grid(row = 0, column = 0, sticky= "nsew")
+        
+        self.show_frame(StartPage)
+    
+    def show_frame(self, cont):
+        
+        frame = self.frames[cont]
+        frame.tkraise()
+        
+class StartPage(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Welcome to the Probability of Failure App!", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        button = ttk.Button(self, text= "Visit Page One", 
+                           command = lambda: controller.show_frame(PageOne))
+        button.pack()
+
+class PageOne(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Raw Data for 124 Deg", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        button1 = ttk.Button(self, text= "Visit Page Two", 
+                           command = lambda: controller.show_frame(PageTwo))
+        button1.pack()
+        button2 = ttk.Button(self, text= "Home Page", 
+                           command = lambda: controller.show_frame(StartPage))
+        button2.pack()
+        main_data= pd.ExcelFile(r'C:\Users\Documents\All data.xlsx')
+        df= pd.read_excel(main_data, '124 deg' , names= ['RSR 100', 'BS'])
+        df.index=np.arange(1,len(df['BS'])+1)
+        df['Rank']=df.index
+        df['Ultimate']= df['RSR 100']* df['BS']
+        df
+        text = tk.Text(self)
+        text.insert(tk.END, str(df))
+        text.pack()
+
+class PageTwo(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        global value_inside
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Fitted Distribution", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        
+        button1 = ttk.Button(self, text= "Visit Page One", 
+                           command = lambda: controller.show_frame(PageOne))
+        button1.pack()
+        button2 = ttk.Button(self, text= "Visit Page Three", 
+                           command = lambda: controller.show_frame(PageThree))
+        button2.pack()
+        button3 = ttk.Button(self, text= "Clear Graph", 
+                           command = lambda: self.clear_graph(self.display_result))
+        button3.pack()
+        
+        options_list = ["124 deg", "154 deg"]
+        value_inside = tk.StringVar()
+        value_inside.set("Select an option")
+
+        question_menu = tk.OptionMenu(self, value_inside, *options_list, command= self.display_result)
+        question_menu.pack()
+        
+        
+    def display_result(self,option):
+        global value_inside
+        main_data= pd.ExcelFile(r'C:\Users\Documents\All data.xlsx')
+        df= pd.read_excel(main_data, '124 deg' , names= ['RSR 100', 'BS'])
+        df1 = pd.read_excel(main_data, '154 deg', names= ['RSR 100', 'BS'])
+        df.index=np.arange(1,len(df['BS'])+1)
+        df1.index= np.arange(1,len(df1['BS'])+1)
+        df['Ultimate']= df['RSR 100']* df['BS']
+        df1['Ultimate']= df1['RSR 100']* df1['BS']
+
+        data1= np.sort(-df['BS'].to_numpy())
+        data2= np.sort(-df['Ultimate'].to_numpy())
+        data3= np.sort(-df1['BS'].to_numpy())
+        data4= np.sort(-df['Ultimate'].to_numpy())
+        
+        option = value_inside.get()
+        
+        dist = [Fit_Lognormal_3P, Fit_Weibull_3P, Fit_Loglogistic_3P, Fit_Gamma_3P]
+        subplot_id = 221
+        f = plt.figure()
+        
+        if option == "124 deg":
+            for d in dist:
+                fit_distributions = d(failures= data1, show_probability_plot= False, print_results= False)
+                plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1, func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            canvas = FigureCanvasTkAgg(f, self)
+            canvas.draw()
+            canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif option == "154 deg":
+            for d in dist:
+                fit_distributions = d(failures= data3, show_probability_plot= False, print_results= False)
+                f.add_subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data3, func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            canvas = FigureCanvasTkAgg(f, self)
+            canvas.draw()
+            canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+       
+    def clear_graph(self, canvas):
+        FigureCanvasTkAgg.get_tk_widget(self.display_result).delete("all")
+        print("Graph has been cleared!")
+
+class PageThree(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Fitted Distribution for 124 Deg", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        button1 = ttk.Button(self, text= "Visit Page Two", 
+                           command = lambda: controller.show_frame(PageTwo))
+        button1.pack()
+        button2 = ttk.Button(self, text= "Home Page", 
+                           command = lambda: controller.show_frame(StartPage))
+        button2.pack()
+        
+        main_data= pd.ExcelFile(r'C:\Users\Documents\All data.xlsx')
+        df= pd.read_excel(main_data, '124 deg' , names= ['RSR 100', 'BS'])
+        df.index=np.arange(1,len(df['BS'])+1)
+        df['Rank']=df.index
+        df['Ultimate']= df['RSR 100']* df['BS']
+
+        data1= np.sort(-df['BS'].to_numpy())
+        data2= np.sort(-df['Ultimate'].to_numpy())
+        
+        f = plt.figure()
+        f1= Fitter(data1, distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+        f1.fit()
+        plt.subplot(221)
+        f1.summary()
+        plt.close()
+    
+        canvas = FigureCanvasTkAgg (f, self)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+        
+app = POFapp()
+app.geometry("1280x720")
+app.mainloop()
