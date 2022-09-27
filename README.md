@@ -13,6 +13,8 @@ An app that show the fitted distribution of a certain data and the probability o
 
 * This is used to calculate the probability of failure (POF) for offshore structures. The data is 
   provided by industrial supervisor.
+  
+* Here is a whole tutorial wrote by me :) on how the project works before using tkinter. [click me](E-notes.pdf)
 
 # Start Page of the App
 Here is a preview of the start page of the app developed using **tkinter.**
