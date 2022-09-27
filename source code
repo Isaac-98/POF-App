@@ -87,7 +87,8 @@ class PageOne(tk.Frame):
                            command = self.clear_everything)
         button3.pack(side= tk.TOP)
         
-        main_data= pd.ExcelFile(r'C:\Users\Ong Kang Chiew\Documents\Final Data.xlsx')
+        ## The main data will extract data from Excel File
+        main_data= pd.ExcelFile(r'')
         sheet_name= main_data.sheet_names
         
         options = sheet_name
