@@ -1,3 +1,5 @@
+## Importing the required packages
+
 import tkinter as tk
 import pandas as pd
 import numpy as np
@@ -6,17 +8,23 @@ import matplotlib.pyplot as plt
 import scipy.stats as ss
 import fitter
 
+## This is essential for matplotlib to be able to use in tkinter
 matplotlib.use("TkAgg")
 LARGE_FONT= ("Times New Roman", 12)
 
 from tkinter import ttk
+from tkinter import *
+from tkinter.ttk import *
+from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from reliability.Fitters import Fit_Weibull_3P, Fit_Lognormal_3P, Fit_Loglogistic_3P, Fit_Gamma_3P, Fit_Exponential_2P
 from reliability.Probability_plotting import plot_points
 from fitter import Fitter
-from tkinter.scrolledtext import ScrolledText
+from scipy.stats import logistic, gumbel_l, gumbel_r
 
+## Creating the App using tkinter. 
 class POFapp(tk.Tk):
     
     def __init__(self, *args, **kwargs):
@@ -31,7 +39,7 @@ class POFapp(tk.Tk):
         
         self.frames = {}
         
-        for F in (StartPage, PageOne, PageTwo, PageThree):
+        for F in (StartPage, PageOne, PageTwo, PageThree, PageFour, PageFive):
 
             frame = F(container, self)
 
@@ -45,155 +53,1848 @@ class POFapp(tk.Tk):
         
         frame = self.frames[cont]
         frame.tkraise()
-        
+
+## Creating the starting page of the App.
 class StartPage(tk.Frame):
     
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
         label = tk.Label(self, text= "Welcome to the Probability of Failure App!", font= LARGE_FONT)
         label.pack(pady= 10, padx= 10)
-        button = ttk.Button(self, text= "Visit Page One", 
+        button = ttk.Button(self, text= "Next Page", 
                            command = lambda: controller.show_frame(PageOne))
         button.pack()
 
+## The First page of the App 
 class PageOne(tk.Frame):
     
     def __init__(self, parent, controller):
+        
+        global op
+        global main_data
+        global sheet_name
+        
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text= "Raw Data for 124 Deg", font= LARGE_FONT)
+        label = tk.Label(self, text= "Raw Data for Preview", font= LARGE_FONT)
         label.pack(pady= 10, padx= 10)
-        button1 = ttk.Button(self, text= "Visit Page Two", 
-                           command = lambda: controller.show_frame(PageTwo))
-        button1.pack()
-        button2 = ttk.Button(self, text= "Home Page", 
+        button1 = ttk.Button(self, text= "Previous Page", 
                            command = lambda: controller.show_frame(StartPage))
-        button2.pack()
-        main_data= pd.ExcelFile(r'C:\Users\Documents\All data.xlsx')
-        df= pd.read_excel(main_data, '124 deg' , names= ['RSR 100', 'BS'])
-        df.index=np.arange(1,len(df['BS'])+1)
-        df['Rank']=df.index
-        df['Ultimate']= df['RSR 100']* df['BS']
-        df
-        text = tk.Text(self)
-        text.insert(tk.END, str(df))
-        text.pack()
+        button1.pack(side= tk.LEFT, anchor= tk.NW)
+        button2 = ttk.Button(self, text= "Next Page", 
+                           command = lambda: controller.show_frame(PageTwo))
+        button2.pack(side= tk.RIGHT, anchor= tk.NE)
+        button3 = ttk.Button(self, text= "Clear Data", 
+                           command = self.clear_everything)
+        button3.pack(side= tk.TOP)
+        
+        main_data= pd.ExcelFile(r'C:\Users\Ong Kang Chiew\Documents\Final Data.xlsx')
+        sheet_name= main_data.sheet_names
+        
+        options = sheet_name
+        
+        op = tk.StringVar()
+        op.set("Select an option")
 
+        question_menu = tk.OptionMenu(self, op, *options, command= self.raw_data_preview)
+        question_menu.pack()
+        
+    def raw_data_preview(self, option):
+        
+        global main_data
+        global sheet_name
+        
+        sheet_to_df_map = {}
+
+        for s in sheet_name:
+            sheet_to_df_map[s] = main_data.parse(s)
+            header = sheet_to_df_map[s].loc[0]
+        
+        self.text = tk.Text(self)
+        if option == '124 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['124 deg']))
+            self.text.pack()
+
+        elif option == '274 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['274 deg']))
+            self.text.pack()
+            
+        elif option == '64 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['64 deg']))
+            self.text.pack()
+            
+        elif option == '244 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['244 deg']))
+            self.text.pack()
+            
+        elif option == '154 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['154 deg']))
+            self.text.pack()
+            
+        elif option == '34 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['34 deg']))
+            self.text.pack()
+            
+        elif option == '304 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['304 deg']))
+            self.text.pack()
+            
+        elif option == '334 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['334 deg']))
+            self.text.pack()
+            
+        elif option == '94 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['94 deg']))
+            self.text.pack()
+            
+        elif option == '184 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['184 deg']))
+            self.text.pack()
+            
+        elif option == '214 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['214 deg']))
+            self.text.pack()
+            
+        elif option == '4 deg':    
+            self.text.insert(tk.END, str(sheet_to_df_map['4 deg']))
+            self.text.pack()
+
+    def clear_everything(raw_data_preview):
+        
+        global op
+        
+        op.set('Select an option')
+        raw_data_preview.text.pack_forget()
+ 
+## Second page of the app
 class PageTwo(tk.Frame):
     
     def __init__(self, parent, controller):
-        global value_inside
+        
+        global choices1
+        global choices2
+        global main_data
+        global sheet_name
+        global data1 
+        global data2
+        
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text= "Fitted Distribution", font= LARGE_FONT)
+        label = tk.Label(self, text= "Fitted Distribution Using Reliability", font= LARGE_FONT)
         label.pack(pady= 10, padx= 10)
         
-        button1 = ttk.Button(self, text= "Visit Page One", 
+        button1 = ttk.Button(self, text= "Previous Page", 
                            command = lambda: controller.show_frame(PageOne))
-        button1.pack()
-        button2 = ttk.Button(self, text= "Visit Page Three", 
+        button1.pack(side= tk.LEFT, anchor= tk.NW)
+        button2 = ttk.Button(self, text= "Next Page", 
                            command = lambda: controller.show_frame(PageThree))
-        button2.pack()
-        button3 = ttk.Button(self, text= "Clear Graph", 
-                           command = lambda: self.clear_graph(self.display_result))
-        button3.pack()
+        button2.pack(side= tk.RIGHT, anchor= tk.NE)
+        button3 = ttk.Button(self, text= "Home Page", 
+                            command = lambda: controller.show_frame(StartPage))
+        button3.pack(side= tk.TOP, anchor= tk.N)
+        button4 = ttk.Button(self, text= "Clear Graph", 
+                           command = self.clear_graph)
+        button4.pack(side= tk.TOP, anchor= tk.N)
         
-        options_list = ["124 deg", "154 deg"]
-        value_inside = tk.StringVar()
-        value_inside.set("Select an option")
+        sheet_to_df_map = {}
+        data1 = {}
+        data2 = {}
 
-        question_menu = tk.OptionMenu(self, value_inside, *options_list, command= self.display_result)
-        question_menu.pack()
+        for s in sheet_name:
+            sheet_to_df_map[s] = main_data.parse(s)
+            header = sheet_to_df_map[s].loc[0]
+            data1[s] = abs(sheet_to_df_map[s].loc[:, 'BS'].to_numpy())
+            data2[s] = abs(sheet_to_df_map[s].loc[:, 'Ultimate'].to_numpy())
         
+        options1 = ['Base Shear', 'Ultimate Strength']
         
-    def display_result(self,option):
-        global value_inside
-        main_data= pd.ExcelFile(r'C:\Users\Documents\All data.xlsx')
-        df= pd.read_excel(main_data, '124 deg' , names= ['RSR 100', 'BS'])
-        df1 = pd.read_excel(main_data, '154 deg', names= ['RSR 100', 'BS'])
-        df.index=np.arange(1,len(df['BS'])+1)
-        df1.index= np.arange(1,len(df1['BS'])+1)
-        df['Ultimate']= df['RSR 100']* df['BS']
-        df1['Ultimate']= df1['RSR 100']* df1['BS']
+        choices1 = tk.StringVar()
+        choices1.set('Select an option')
 
-        data1= np.sort(-df['BS'].to_numpy())
-        data2= np.sort(-df['Ultimate'].to_numpy())
-        data3= np.sort(-df1['BS'].to_numpy())
-        data4= np.sort(-df['Ultimate'].to_numpy())
+        om1 = tk.OptionMenu(self, choices1, *options1)
+        om1.pack()
         
-        option = value_inside.get()
+        options2 = sheet_name
         
-        dist = [Fit_Lognormal_3P, Fit_Weibull_3P, Fit_Loglogistic_3P, Fit_Gamma_3P]
+        choices2 = tk.StringVar()
+        choices2.set('Select an option')
+        
+        om2 = tk.OptionMenu(self, choices2, *options2, command = self.display_result)
+        om2.pack()
+        
+    def display_result(self, choices):
+        ## Since the data contained is huge, so we are using 
+        ## loop to iterate all the data. 
+        
+        global choices1
+        global choices2
+        global main_data
+        global sheet_name
+        global data1 
+        global data2
+
         subplot_id = 221
         f = plt.figure()
         
-        if option == "124 deg":
-            for d in dist:
-                fit_distributions = d(failures= data1, show_probability_plot= False, print_results= False)
-                plt.subplot(subplot_id)
+        self.canvas = FigureCanvasTkAgg(f, self)
+        
+        os1 = choices1.get()
+        os2 = choices2.get()
+        
+        dist = [Fit_Lognormal_3P, Fit_Weibull_3P, Fit_Loglogistic_3P, Fit_Gamma_3P]
+        
+        if ((os1 == 'Base Shear') and (os2 == '124 deg')):
+            for d in dist: 
+                fit_distributions = d(failures= data1['124 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
                 fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
-                plot_points(failures=data1, func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plot_points(failures=data1['124 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
                 plt.legend()
                 subplot_id += 1
 
             plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
             plt.close()
 
-            canvas = FigureCanvasTkAgg(f, self)
-            canvas.draw()
-            canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
-            
-        elif option == "154 deg":
+            self.canvas.draw()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '274 deg')):
             for d in dist:
-                fit_distributions = d(failures= data3, show_probability_plot= False, print_results= False)
-                f.add_subplot(subplot_id)
+                fit_distributions = d(failures= data1['274 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
                 fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
-                plot_points(failures=data3, func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plot_points(failures=data1['274 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
                 plt.legend()
                 subplot_id += 1
 
             plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
             plt.close()
 
-            canvas = FigureCanvasTkAgg(f, self)
-            canvas.draw()
-            canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
-       
-    def clear_graph(self, canvas):
-        FigureCanvasTkAgg.get_tk_widget(self.display_result).delete("all")
-        print("Graph has been cleared!")
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
 
+        elif ((os1 == 'Base Shear') and (os2 == '64 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['64 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['64 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '244 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['244 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['244 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '154 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['154 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['274 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '34 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['34 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['274 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '304 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['304 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['304 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '334 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['334 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['334 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '94 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['94 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['94 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '184 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['184 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['184 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Base Shear') and (os2 == '214 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['214 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['214 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True) 
+
+        elif ((os1 == 'Base Shear') and (os2 == '4 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data1['4 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data1['4 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '124 deg')):
+            for d in dist: 
+                fit_distributions = d(failures= data2['124 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['124 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '64 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['64 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['64 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '274 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['274 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['274 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '244 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['244 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['244 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '154 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['154 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['274 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '34 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['34 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['274 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '304 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['304 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['304 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '334 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['334 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['334 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '94 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['94 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['94 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '184 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['184 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['184 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '214 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['214 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['214 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True) 
+
+        elif ((os1 == 'Ultimate Strength') and (os2 == '4 deg')):
+            for d in dist:
+                fit_distributions = d(failures= data2['4 deg'], show_probability_plot= False, print_results= False)
+                ax = plt.subplot(subplot_id)
+                fit_distributions.distribution.CDF(label='Fitted Distribution', color='Steelblue')
+                plot_points(failures=data2['4 deg'], func='CDF', label='Failure data', color='red', alpha= 0.7)
+                plt.legend()
+                subplot_id += 1
+
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+          
+
+    def clear_graph(display_result):
+        
+        global choices1
+        global choices2
+        
+        choices1.set('Select an option')
+        choices2.set('Select an option')
+        display_result.canvas.get_tk_widget().pack_forget()
+
+## Third page of the App
 class PageThree(tk.Frame):
     
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text= "Fitted Distribution for 124 Deg", font= LARGE_FONT)
-        label.pack(pady= 10, padx= 10)
-        button1 = ttk.Button(self, text= "Visit Page Two", 
-                           command = lambda: controller.show_frame(PageTwo))
-        button1.pack()
-        button2 = ttk.Button(self, text= "Home Page", 
-                           command = lambda: controller.show_frame(StartPage))
-        button2.pack()
         
-        main_data= pd.ExcelFile(r'C:\Users\Documents\All data.xlsx')
-        df= pd.read_excel(main_data, '124 deg' , names= ['RSR 100', 'BS'])
-        df.index=np.arange(1,len(df['BS'])+1)
-        df['Rank']=df.index
-        df['Ultimate']= df['RSR 100']* df['BS']
+        global choices3
+        global choices4
+        global sheet_name
+        
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Fitted Distribution Using Fitter", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        
+        button1 = ttk.Button(self, text= "Previous Page", 
+                           command = lambda: controller.show_frame(PageTwo))
+        button1.pack(side= tk.LEFT, anchor= tk.NW)
+        button2 = ttk.Button(self, text= "Next Page", 
+                            command = lambda: controller.show_frame(PageFour))
+        button2.pack(side= tk.RIGHT, anchor= tk.NE)
+        button3 = ttk.Button(self, text= "Clear Graph", 
+                           command = self.clear_graph)
+        button3.pack(side= tk.TOP, anchor= tk.N)
+        
+        options3 = ['Base Shear', 'Ultimate Strength']
+        
+        choices3 = tk.StringVar()
+        choices3.set("Select an option")
+        
+        om3 = tk.OptionMenu(self, choices3, *options3)
+        om3.pack()
+        
+        options4 = sheet_name
+        
+        choices4 = tk.StringVar()
+        choices4.set("Select an option")
 
-        data1= np.sort(-df['BS'].to_numpy())
-        data2= np.sort(-df['Ultimate'].to_numpy())
+        om4 = tk.OptionMenu(self, choices4, *options4, command= self.display_result)
+        om4.pack()
+        
+        
+    def display_result(self, choices):
+        
+        global choices3
+        global choices4
+        global data1
+        global data2
         
         f = plt.figure()
-        f1= Fitter(data1, distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
-        f1.fit()
-        plt.subplot(221)
-        f1.summary()
-        plt.close()
-    
-        canvas = FigureCanvasTkAgg (f, self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
         
+        self.canvas = FigureCanvasTkAgg(f, self)
+        
+        os3 = choices3.get()
+        os4 = choices4.get()
+        
+        if ((os3 == 'Base Shear') and (os4 == '124 deg')):
+            f1= Fitter(data1['124 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os3 == 'Base Shear') and (os4 == '274 deg')):
+            f1= Fitter(data1['274 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '64 deg')):
+            f1= Fitter(data1['64 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '244 deg')):
+            f1= Fitter(data1['244 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '154 deg')):
+            f1= Fitter(data1['154 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '34 deg')):
+            f1= Fitter(data1['34 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '304 deg')):
+            f1= Fitter(data1['304 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '334 deg')):
+            f1= Fitter(data1['334 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '94 deg')):
+            f1= Fitter(data1['94 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '184 deg')):
+            f1= Fitter(data1['184 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Base Shear') and (os4 == '214 deg')):
+            f1= Fitter(data1['214 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True) 
+            
+        elif ((os3 == 'Base Shear') and (os4 == '4 deg')):
+            f1= Fitter(data1['4 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '124 deg')):
+            f1= Fitter(data2['124 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+        elif ((os3 == 'Ultimate Strength') and (os4 == '274 deg')):
+            f1= Fitter(data2['274 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '64 deg')):
+            f1= Fitter(data2['64 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '244 deg')):
+            f1= Fitter(data2['244 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '154 deg')):
+            f1= Fitter(data1['154 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '34 deg')):
+            f1= Fitter(data1['34 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '304 deg')):
+            f1= Fitter(data1['304 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '334 deg')):
+            f1= Fitter(data1['334 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '94 deg')):
+            f1= Fitter(data1['94 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '184 deg')):
+            f1= Fitter(data1['184 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '214 deg')):
+            f1= Fitter(data1['214 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True) 
+            
+        elif ((os3 == 'Ultimate Strength') and (os4 == '4 deg')):
+            f1= Fitter(data1['4 deg'], distributions =['norm','logistic','expon', 'gumbel_l', 'gumbel_r'])
+            f1.fit()
+            plt.subplot(221)
+            plt.subplots_adjust(left=0.11, bottom=0.08, right=0.95, top=0.89, wspace=0.33, hspace=0.58)
+            f1.summary()
+            plt.close()
+
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+
+    def clear_graph(display_result):
+        
+        global choices3 
+        global choices4 
+        
+        choices3.set('Select an option')
+        choices4.set('Select an option')
+        display_result.canvas.get_tk_widget().pack_forget()        
+ 
+## Fourth page of the App.
+class PageFour(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        
+        global choices5
+        global choices6
+        global sheet_name
+        
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Anderson-Darling(AD) Test Statistics", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        
+        button1 = ttk.Button(self, text= "Previous Page", 
+                           command = lambda: controller.show_frame(PageThree))
+        button1.pack(side= tk.LEFT, anchor= tk.NW)
+        button2 = ttk.Button(self, text= "Next Page", 
+                            command = lambda: controller.show_frame(PageFive))
+        button2.pack(side= tk.RIGHT, anchor= tk.NE)
+        button3 = ttk.Button(self, text= "Clear Table", 
+                           command = self.clear_table)
+        button3.pack(side= tk.TOP, anchor= tk.N)
+        
+        option5 = ['Base Shear', 'Ultimate Strength']
+        
+        choices5 = tk.StringVar()
+        choices5.set("Select an option")
+        
+        om5 = tk.OptionMenu(self, choices5, *option5)
+        om5.pack()
+        
+        option6 = sheet_name
+        
+        choices6 = tk.StringVar()
+        choices6.set("Select an option")
+        
+        om6 = tk.OptionMenu(self, choices6, *option6, command = self.plot_table)
+        om6.pack()
+        
+    def plot_table(self, choices):
+        
+        global choices5
+        global choices6
+        global data1
+        global data2
+        
+        op5 = choices5.get()
+        op6 = choices6.get()
+        
+        if ((op5 == 'Base Shear') and (op6 == '124 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+              'Anderson-Darling test':[137.162,168.244, 234.921, 141.389,
+                                       148.166, 123.424, np.nan, 117.990, 139.009]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Base Shear') and (op6 == '274 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[446.644, 567.655, 798.6, 460.193,
+                                   498.798, 320.450, np.nan, 352.326, 451.545]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Base Shear') and (op6 == '64 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[126.616, 164.824, 234.825, np.nan, 
+                                   144.173, 139.518, np.nan, 111.806, 136.788]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Base Shear') and (op6 == '244 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[ 198.777, 260.57, 373.468, np.nan, 
+                                   226.864, 171.051, np.nan, 156.698, 202.886]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Base Shear') and (op6 == '154 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[77.776, 96.1364, 133.023, 88.1197, 
+                                   80.719, 65.825, np.nan,  71.231, 82.069]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+        
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Base Shear') and (op6 == '34 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[257.799, 319.131, 440.713, 296.557,
+                                   258.735, 263.489, np.nan, 236.841, 271.987]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Base Shear') and (op6 == '304 deg')):
+            
+            warning_text = "The data given for this direction is too large for Python to compute!"
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(warning_text))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Base Shear') and (op6 == '334 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[512.326, 680.788, 967.528, 536.068,  
+                                   587.489, 362.689, np.nan, 393.344, 529.436]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Base Shear') and (op6 == '94 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[96.992, 129.85, 184.356, np.nan, 
+                                   110.172, 108.068, np.nan, 81.711, 105.264]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Base Shear') and (op6 == '184 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[137.606, 189.505, 272.115, 146.169, 
+                                   160.000, 89.496, np.nan, 107.607, 148.148]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Base Shear') and (op6 == '214 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[180.514, 229.841 , 319.837, np.nan, 
+                                   197.199, 217.265, np.nan, 158.753, 192.372]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Base Shear') and (op6 == '4 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[330.934, 483.917 , 708.418, 341.026, 
+                                   405.229,  192.941, np.nan, 237.925, 356.968]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '124 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                    'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                    'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[97.857, 164.832, 174.676, np.nan, 
+                                   230.860, 117.151, np.nan, 91.725, 136.787]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '274 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[356.429, 567.673, 650.346, 460.195,
+                                   417.925, 262.348, np.nan, 273.966, 451.544]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Ultimate Strength') and (op6 == '64 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[97.857, 164.832, 174.67642512924385, np.nan,
+                                   230.860, 117.151, np.nan, 91.725, 136.787]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Ultimate Strength') and (op6 == '244 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[149.096, 260.559, 296.476 ,np.nan, 
+                                   184.129, 231.281, np.nan, 116.957, 202.885]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Ultimate Strength') and (op6 == '154 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[67.792, 96.137 , 98.380 , 75.331, 
+                                   70.840, 57.103, np.nan, 63.656, 82.070]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+        
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Ultimate Strength') and (op6 == '34 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[234.888, 319.129, 319.377, 296.554, 
+                                   236.179, 233.556, np.nan, 217.415, 271.985]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+            
+        elif ((op5 == 'Ultimate Strength') and (op6 == '304 deg')):
+            
+            warning_text = "The data given for this direction is too large for Python to compute!"
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(warning_text))
+            self.text.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '334 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[ 399.527, 680.763, 772.996, 536.068, 
+                                   480.140, 266.257, np.nan, 304.485, 529.436]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '94 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                      'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                      'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[73.053, 129.847, 139.989, np.nan, 
+                                   90.132, 168.303, np.nan, 63.191, 105.264]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '184 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[101.691, 189.513, 208.793, 146.171,  
+                                   127.232, 65.358, np.nan, 78.368, 148.149]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '214 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[142.956, 229.838, 246.924, np.nan, 
+                                   167.836, 335.783, np.nan, 131.217, 192.372]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+        
+        elif ((op5 == 'Ultimate Strength') and (op6 == '4 deg')):
+            table = {'Distributions':['Normal', 'Lognormal_3P', 'Exponential',
+                                     'Weibull_3P', 'Smallest Extreme Value','Largest Extreme Value',
+                                     'Gamma_3P', 'Logistic', 'Loglogistic_3P'],
+          'Anderson-Darling test':[230.513, 483.9, 543.157, 341.026, 
+                                   309.239, 117.618, np.nan, 163.427, 356.968]}
+            
+            df = pd.DataFrame(table)
+            df.index=np.arange(1, len(df)+1)
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(df))
+            self.text.pack()
+            
+            info = "The selected distribution is based on the lowest value of AD-test"
+            self.text1 = tk.Text(self, width= 80, height= 1, font= LARGE_FONT)
+            self.text1.insert(tk.END, str(info))
+            self.text1.pack()
+
+    def clear_table(plot_table):
+        
+        global choices5
+        global choices6
+        
+        choices5.set('Select an option')
+        choices6.set('Select an option')
+        
+        plot_table.text.pack_forget()
+        plot_table.text1.pack_forget()
+
+## Page Five of the App which display the result.
+class PageFive(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        
+        global choices7
+        global sheet_name
+        
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text= "Probability of Failure (POF)", font= LARGE_FONT)
+        label.pack(pady= 10, padx= 10)
+        
+        button1 = ttk.Button(self, text= "Previous Page", 
+                           command = lambda: controller.show_frame(PageFour))
+        button1.pack(side= tk.LEFT, anchor= tk.NW)
+        button2 = ttk.Button(self, text= "Home Page", 
+                            command = lambda: controller.show_frame(StartPage))
+        button2.pack(side= tk.TOP, anchor= tk.N)
+        button3 = ttk.Button(self, text= "Clear Graph", 
+                            command = self.clear_everything)
+        button3.pack(side= tk.TOP, anchor= tk.N)
+        
+        option7 = sheet_name
+        
+        choices7 = tk.StringVar()
+        choices7.set("Select an option")
+        
+        om7 = tk.OptionMenu(self, choices7, *option7, command= self.plot_graph)
+        om7.pack()
+        
+    def plot_graph(self, choices):
+        
+        global choices7
+        
+        f = plt.figure()
+        
+        self.canvas = FigureCanvasTkAgg(f, self)
+        
+        os7 = choices7.get()
+        
+        if os7 == '124 deg': 
+            m1, std1 = logistic.fit(data1['124 deg'])
+            m2, std2 = logistic.fit(data2['124 deg'])
+
+            xmin, xmax= plt.xlim(data1['124 deg'].min(), data1['124 deg'].max())
+
+            x1 = np.linspace(xmin, xmax, len(data1['124 deg']))
+
+            plt.plot(x1, logistic.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['124 deg']))
+
+            plt.plot(x2, logistic.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Logistic Distrbution for 124 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(logistic.pdf(x2, m2, std2) * logistic.sf(x1, m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()
+            
+        elif os7 == '274 deg': 
+            m1, std1 = gumbel_l.fit(data1['274 deg'])
+            m2, std2 = gumbel_l.fit(data2['274 deg'])
+
+            xmin, xmax = plt.xlim([data2['274 deg'].min(), data2['274 deg'].max()])
+
+            x1 = np.linspace(xmin, xmax, len(data1['274 deg']))
+
+            plt.plot(x1, gumbel_l.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['274 deg']))
+
+            plt.plot(x2, gumbel_l.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF* for Ultimate')
+
+            plt.title('Gumbel Distrbution for 274 Deg')
+            plt.legend()
+            plt.close()
+
+            pof =  np.trapz(gumbel_l.pdf(x1, m1, std1) * gumbel_l.pdf(x2, m2, std2))  
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()  
+        
+        elif os7 == '64 deg': 
+            m1, std1 = logistic.fit(data1['64 deg'])
+            m2, std2 = logistic.fit(data2['64 deg'])
+
+            xmin,xmax= plt.xlim([-0.5e+07,0.25e+08 ])
+
+            x1 = np.linspace(xmin, xmax, len(data1['64 deg']))
+
+            plt.plot(x1, logistic.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['64 deg']))
+
+            plt.plot(x2, logistic.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Logistic Distrbution for 64 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(logistic.pdf(x2, m2, std2) * logistic.sf(x1, m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()
+            
+        elif os7 == '244 deg': 
+            m1, std1 = logistic.fit(data1['244 deg'])
+            m2, std2 = logistic.fit(data2['244 deg'])
+
+            xmin, xmax= plt.xlim(data2['244 deg'].min(), data2['244 deg'].max())
+
+            x1 = np.linspace(xmin, xmax, len(data1['244 deg']))
+
+            plt.plot(x1, logistic.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['244 deg']))
+
+            plt.plot(x2, logistic.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Logistic Distrbution for 244 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(logistic.pdf(x2, m2, std2) * logistic.sf(x1, m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack() 
+            
+        elif os7 == '154 deg': 
+            m1, std1 = logistic.fit(data1['154 deg'])
+            m2, std2 = logistic.fit(data2['154 deg'])
+
+            xmin, xmax= plt.xlim([data2['154 deg'].min(), data2['154 deg'].max()])
+
+            x1 = np.linspace(xmin, xmax, len(data1['154 deg']))
+
+            plt.plot(x1, gumbel_l.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['154 deg']))
+
+            plt.plot(x2, gumbel_l.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Gumbel Distrbution for 154 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(gumbel_l.pdf(x2, m2, std2) * gumbel_l.sf(x1, m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack() 
+            
+        elif os7 == '34 deg': 
+            m1, std1 = 5998455.981263958 ,1012727.7933230959
+            m2, std2 = 33131376.377254345, 10726276.915037455
+
+            xmin, xmax= plt.xlim([-0.4e+8, 0.8e+8])
+
+            x1 = np.linspace(xmin, xmax, len(data1['34 deg']))
+
+            plt.plot(x1, logistic.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['34 deg']))
+
+            plt.plot(x2, logistic.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF* for Ultimate')
+
+            plt.title('Logistic Distrbution for 34 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(logistic.pdf(x2, m2, std2) * logistic.pdf(x1, m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack() 
+            
+        elif os7 == '304 deg': 
+            
+            warning_text = "The data given for this direction is too large for Python to compute!"
+            
+            self.text = tk.Text(self)    
+            self.text.insert(tk.END, str(warning_text))
+            self.text.pack()
+            
+        elif os7 == '334 deg': 
+            m1, std1 = gumbel_l.fit(data1['334 deg'])
+            m2, std2 = gumbel_l.fit(data2['334 deg'])
+
+            xmin, xmax= plt.xlim([-0.5e+7, 4.0e+7])
+
+            x1 = np.linspace(xmin, xmax, len(data1['334 deg']))
+
+            plt.plot(x1, gumbel_l.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['334 deg']))
+
+            plt.plot(x2, gumbel_l.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF* for Ultimate')
+
+            plt.title('Gumbel Distrbution for 334 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(gumbel_l.pdf(data2['334 deg'], m2, std2) * gumbel_l.pdf(data1['334 deg'], m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack() 
+            
+        elif os7 == '94 deg': 
+            m1, std1 = logistic.fit(data1['94 deg'])
+            m2, std2 = logistic.fit(data2['94 deg'])
+
+            xmin, xmax= plt.xlim([-0.5e+07, 1.75e+07])
+
+            x1 = np.linspace(xmin, xmax, len(data1['94 deg']))
+
+            plt.plot(x1, logistic.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['94 deg']))
+
+            plt.plot(x2, logistic.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Logistic Distrbution for 94 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(logistic.pdf(data2['94 deg'], m2, std2) * logistic.sf(data1['94 deg'], m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()
+            
+        elif os7 == '184 deg': 
+            m1, std1 = gumbel_l.fit(data1['184 deg'])
+            m2, std2 = gumbel_l.fit(data2['184 deg'])
+
+            xmin, xmax= plt.xlim(data2['184 deg'].min(), data2['184 deg'].max())
+
+            x1 = np.linspace(xmin, xmax, len(data1['184 deg']))
+
+            plt.plot(x1, gumbel_l.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['184 deg']))
+
+            plt.plot(x2, gumbel_l.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Gumbel Distrbution for 184 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(gumbel_l.pdf(data2['184 deg'], m2, std2) * gumbel_l.sf(data1['184 deg'], m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()
+        
+        elif os7 == '214 deg': 
+            m1, std1 = logistic.fit(data1['214 deg'])
+            m2, std2 = logistic.fit(data2['214 deg'])
+
+            xmin, xmax= plt.xlim([-0.5e+7, 0.5e+8])
+
+            x1 = np.linspace(xmin, xmax, len(data1['214 deg']))
+
+            plt.plot(x1, logistic.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF* for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['214 deg']))
+
+            plt.plot(x2, logistic.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF for Ultimate')
+
+            plt.title('Logistic Distrbution for 214 Deg')
+            plt.legend()
+            plt.close()
+            
+            pof =  np.trapz(logistic.pdf(data2['214 deg'], m2, std2) * logistic.sf(data1['214 deg'], m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()
+            
+        elif os7 == '4 deg': 
+            m1, std1 = gumbel_l.fit(data1['4 deg'])
+            m2, std2 = gumbel_l.fit(data2['4 deg'])
+
+            xmin, xmax= plt.xlim(-0.5e+7, 5.0e+7)
+
+            x1 = np.linspace(xmin, xmax, len(data1['4 deg']))
+
+            plt.plot(x1, gumbel_l.pdf(x1, m1, std1), 
+                     lw=3, alpha=1, label='PDF for BS')
+
+            x2 = np.linspace(xmin, xmax, len(data2['4 deg']))
+
+            plt.plot(x2, gumbel_l.pdf(x2, m2, std2), 
+                     lw=3, alpha=1, label='PDF* for Ultimate')
+
+            plt.title('Gumbel Distrbution for 4 Deg')
+            plt.legend()
+            plt.close()
+
+            pof =  np.trapz(gumbel_l.pdf(data2['4 deg'], m2, std2) * gumbel_l.pdf(data1['4 deg'], m1, std1)) 
+            
+            result = "The Probability of Failure is", pof
+            
+            self.canvas.draw()
+            self.canvas.flush_events()
+            self.canvas.get_tk_widget().pack(side= tk.TOP, fill= tk.BOTH, expand= True)
+            
+            self.text = tk.Text(self, width= 60, height= 1, font= LARGE_FONT)    
+            self.text.insert(tk.END, str(result))
+            self.text.pack()
+            
+    def clear_everything(plot_graph):
+        
+        global choices7
+        
+        choices7.set('Select an option')
+        
+        plot_graph.canvas.get_tk_widget().pack_forget() 
+        plot_graph.text.pack_forget()
+        
+      
 app = POFapp()
 app.geometry("1280x720")
 app.mainloop()
